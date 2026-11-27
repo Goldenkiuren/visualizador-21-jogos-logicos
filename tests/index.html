@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>21 Jogos — tests</title>
+<style>
+  body { margin: 0; padding: 18px; background: #14161a; color: #dfe3ea;
+         font: 13px/1.5 ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+  h1 { font: 600 17px -apple-system, "Segoe UI", Roboto, Arial, sans-serif; margin: 0 0 4px; }
+  h1 span { color: #d8a24a; font-weight: 400; }
+  p { margin: 0 0 14px; color: #8a93a3; font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif; }
+  a { color: #d8a24a; }
+  #summary { font-size: 15px; margin: 0 0 12px; color: #dfe3ea; }
+  #summary.ok { color: #86b884; }
+  #summary.bad { color: #e08a7a; }
+  pre { margin: 0; white-space: pre-wrap; }
+  .suite { color: #dfe3ea; font-weight: 600; margin-top: 8px; display: block; }
+  .pass { color: #8a93a3; }
+  .fail { color: #e08a7a; }
+</style>
+</head>
+<body>
+<h1>21 Jogos <span>tests</span></h1>
+<p>The same files that <code>node tests/run.mjs</code> runs. <a href="../">Back to the viewer</a></p>
+<p id="summary">Running…</p>
+<pre id="log"></pre>
+
+<script type="module">
+  import { run } from './harness.js';
+  import { FILES } from './files.js';
+
+  const log = document.getElementById('log');
+  const summary = document.getElementById('summary');
+  try {
+    for (const file of FILES) await import('./' + file);
+    const started = performance.now();
+    const result = run((line, kind) => {
+      if (kind === 'summary') return;
+      const span = document.createElement('span');
+      span.className = kind;
+      span.textContent = line + '\n';
+      log.appendChild(span);
+    });
+    summary.textContent = `${result.passed} passed, ${result.failed} failed — ${((performance.now() - started) / 1000).toFixed(1)} s`;
+    summary.className = result.failed ? 'bad' : 'ok';
+    window.__TESTS = { passed: result.passed, failed: result.failed };
+  } catch (e) {
+    summary.textContent = 'The tests could not start: ' + e.message;
+    summary.className = 'bad';
+    window.__TESTS = { passed: 0, failed: 1, error: String(e) };
+  }
+</script>
+</body>
+</html>

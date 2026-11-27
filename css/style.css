@@ -1,0 +1,465 @@
+/* ==========================================================================
+   21 Jogos — Match Viewer — stylesheet
+   Deliberately lightweight: no web fonts, no blurs/filters, no large shadows.
+   Animation is limited to `transform` and `opacity` so it stays on the
+   compositor and runs acceptably on old hardware.
+   ========================================================================== */
+
+:root {
+  --bg:        #14161a;
+  --bg-panel:  #1c1f25;
+  --bg-sunken: #121418;
+  --line:      #2c313a;
+  --text:      #dfe3ea;
+  --muted:     #8a93a3;
+  --accent:    #d8a24a;
+  --accent-dk: #a97c2e;
+
+  --p1:        #e8e2d4;   /* light pieces */
+  --p1-edge:   #a29883;
+  --p2:        #4e5b78;   /* dark pieces  */
+  --p2-edge:   #2b3448;
+  --block:     #6f685c;   /* block pieces */
+  --block-edge:#3d3830;
+  --block-x:   #26221c;
+
+  --board-bg:  #2a2118;
+  --board-ln:  #7a6a52;
+  --node:      #b8a684;
+
+  --warn:      #e0b070;
+  --bad:       #e08a7a;
+  --good:      #86b884;
+  --info:      #8fb4d9;
+  --hint:      #7fd18a;   /* board input */
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+h1, h2 { margin: 0; font-weight: 600; }
+
+code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: .92em; }
+
+[hidden] { display: none !important; }
+
+/* ---------------------------------------------------------------- topbar */
+.topbar {
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+}
+.topbar h1 { font-size: 17px; letter-spacing: .02em; }
+.topbar h1 span { color: var(--accent); font-weight: 400; }
+.topbar .tag { margin: 0; color: var(--muted); font-size: 12px; }
+
+/* ---------------------------------------------------------------- layout */
+.layout {
+  display: grid;
+  grid-template-columns: 320px minmax(320px, 1fr) 340px;
+  gap: 14px;
+  padding: 14px;
+  align-items: start;
+}
+@media (max-width: 1080px) {
+  .layout { grid-template-columns: 1fr; }
+}
+
+.panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 12px;
+  min-width: 0;                /* let long records wrap instead of widening the grid */
+}
+.panel h2 {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+/* ---------------------------------------------------------------- inputs */
+textarea {
+  display: block;
+  width: 100%;
+  height: 240px;
+  resize: vertical;
+  background: var(--bg-sunken);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 8px;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.5;
+}
+@media (max-width: 1080px) {
+  textarea { height: 150px; }
+}
+textarea:focus, select:focus, button:focus-visible, input:focus-visible,
+summary:focus-visible, .movelist:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+.row.first { margin-top: 0; }
+.row label { color: var(--muted); font-size: 12px; }
+.row > label:first-child { min-width: 52px; }
+
+select {
+  flex: 1;
+  min-width: 0;
+  background: var(--bg-sunken);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 5px 6px;
+  font-size: 12px;
+}
+
+.motto {
+  margin: 6px 0 10px;
+  min-height: 17px;
+  color: var(--muted);
+  font-size: 12px;
+  font-style: italic;
+}
+.motto b { color: var(--accent); font-style: normal; font-weight: 600; }
+
+button {
+  background: #262b33;
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 6px 11px;
+  font-size: 13px;
+  cursor: pointer;
+}
+button:hover:not(:disabled) { background: #2f353f; }
+button:active:not(:disabled) { background: #21262d; }
+button:disabled { opacity: .4; cursor: default; }
+button.primary {
+  background: var(--accent-dk);
+  border-color: var(--accent);
+  color: #1a1408;
+  font-weight: 600;
+}
+button.primary:hover:not(:disabled) { background: var(--accent); }
+button.wide { min-width: 92px; }
+
+.status { min-height: 17px; margin: 8px 0 0; font-size: 12px; color: var(--muted); }
+.status.err { color: var(--bad); }
+.status.ok  { color: var(--good); }
+
+.help { margin-top: 12px; font-size: 12px; color: var(--muted); }
+.help summary { cursor: pointer; }
+.help summary span { color: var(--text); }
+.help ul { margin: 8px 0 0; padding-left: 18px; }
+.help li { margin: 3px 0; }
+.help code { color: var(--text); }
+.help p { margin: 8px 0 0; }
+.rules-list li { margin: 5px 0; line-height: 1.4; }
+#notation-game:empty { display: none; }
+#notation-game { padding-bottom: 6px; border-bottom: 1px dashed var(--line); }
+
+/* ---------------------------------------------------------------- board  */
+.scoreline {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: start;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.scoreline b { color: var(--text); }
+.scoreline .turn { color: var(--accent); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.scoreline .side { min-width: 0; }
+.scoreline .side-2 { text-align: right; }
+.scoreline .who { display: inline-block; padding-bottom: 1px; border-bottom: 2px solid transparent; }
+.scoreline .side.active .who { color: var(--text); border-bottom-color: var(--accent); }
+.scoreline .side.winner .who { color: var(--good); border-bottom-color: var(--good); }
+.scoreline .chips { display: block; min-height: 16px; margin-top: 2px; font-size: 11px; }
+.scoreline .chip { white-space: nowrap; }
+.scoreline .chip + .chip::before { content: " · "; }
+.dot {
+  display: inline-block;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  vertical-align: -1px;
+}
+.dot.p1 { background: var(--p1); border: 1px solid var(--p1-edge); }
+.dot.p2 { background: var(--p2); border: 1px solid var(--p2-edge); }
+
+/* The frame caps the width; the board inside is square by construction:
+   a percentage padding is measured against the frame's width. */
+.board-frame {
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+  background: var(--board-bg);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+.board {
+  position: relative;
+  width: 100%;
+  padding-top: 100%;          /* square, works on very old browsers too */
+}
+.board > svg,
+.board > .piece-layer {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+}
+.piece-layer, .board-overlay { pointer-events: none; }
+.board.input { cursor: pointer; }
+
+.board svg .grid-line {
+  stroke: var(--board-ln);
+  stroke-width: .7;
+  stroke-linecap: round;
+}
+.board svg .grid-line.diag { stroke-opacity: .75; }
+.board svg .node { fill: var(--node); }
+.board svg .label { fill: var(--muted); font-size: 3.4px; text-anchor: middle; }
+
+/* what a game adds to the bare board ------------------------------------ */
+.board svg .zone { stroke-width: .35; stroke-dasharray: 1.2 1.2; }
+.board svg .zone.s1 { fill: rgba(232, 226, 212, .06); stroke: rgba(232, 226, 212, .34); }
+.board svg .zone.s2 { fill: rgba(110, 132, 190, .10); stroke: rgba(132, 152, 208, .50); }
+.board svg .goal { fill: rgba(216, 162, 74, .10); stroke: var(--accent); stroke-width: .5; stroke-dasharray: .9 1; }
+.board svg .goal-disc { fill: var(--board-bg); }
+.board svg .goal-num { fill: var(--accent); font-size: 4.4px; font-weight: 600; text-anchor: middle; }
+/* the caption carries a halo of the board's colour, so the lines do not run through it */
+.board svg .goal-cap {
+  fill: var(--text);
+  font-size: 2.7px;
+  stroke: var(--board-bg);
+  stroke-width: 1.1px;
+  stroke-linejoin: round;
+  paint-order: stroke fill;
+}
+
+/* rows that won or scored, sides that were filled ------------------------ */
+.board svg .win-line {
+  stroke: var(--accent);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-dasharray: 2.6 2.2;
+  opacity: .95;
+}
+.board svg .win-line.s1 { stroke: #fff6dd; }
+.board svg .win-line.s2 { stroke: #9db4ee; }
+.board svg .win-ring {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: .7;
+  stroke-dasharray: 1.6 1.4;
+}
+
+/* pieces --------------------------------------------------------------- */
+.piece {
+  position: absolute;
+  top: 0; left: 0;
+  width: var(--piece-size, 30px);
+  height: var(--piece-size, 30px);
+  border-radius: 50%;
+  border: 1px solid transparent;
+  transform: translate(-100px, -100px);
+  will-change: transform;
+  z-index: 2;
+}
+.piece.p1 { background: var(--p1); border-color: var(--p1-edge); }
+.piece.p2 { background: var(--p2); border-color: var(--p2-edge); }
+
+/* block piece: the book draws it as a grey disc with an X */
+.piece.block {
+  border-color: var(--block-edge);
+  background:
+    linear-gradient(45deg,  transparent 44%, var(--block-x) 44%, var(--block-x) 56%, transparent 56%) center / 58% 58% no-repeat,
+    linear-gradient(-45deg, transparent 44%, var(--block-x) 44%, var(--block-x) 56%, transparent 56%) center / 58% 58% no-repeat,
+    var(--block);
+}
+
+/* promoted piece: a simple inner ring, cheap to paint */
+.piece.king::after {
+  content: "";
+  position: absolute;
+  top: 18%; left: 18%; right: 18%; bottom: 18%;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+}
+
+/* highlights of the last move; a little wider than a piece so the ring shows
+   around whatever stands on the node */
+.marker, .hint {
+  position: absolute;
+  top: 0; left: 0;
+  width: calc(var(--piece-size, 30px) * 1.24);
+  height: calc(var(--piece-size, 30px) * 1.24);
+  margin: calc(var(--piece-size, 30px) * -0.12);
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  pointer-events: none;
+}
+.marker { z-index: 1; }
+.marker.from { opacity: .5; border-style: dashed; }
+.marker.to   { opacity: .9; }
+.marker.drop { opacity: .7; }
+.marker.hit  { opacity: .85; border-color: var(--bad); border-style: dotted; }
+
+/* board input: what can be clicked next */
+.hint { z-index: 4; border-color: var(--hint); }
+.hint.pick { opacity: .45; border-width: 1px; }
+.hint.sel  { opacity: 1; border-width: 3px; }
+.hint.via  { opacity: .8; border-style: dashed; }
+.hint.stop { opacity: 1; border-style: double; border-width: 4px; }
+.hint.take { opacity: .95; border-color: var(--bad); border-width: 3px; }
+.hint.to {
+  border: 0;
+  background: radial-gradient(circle, var(--hint) 0, var(--hint) 17%, transparent 19%);
+  opacity: .8;
+}
+
+/* fallback transitions when the Web Animations API is unavailable */
+.piece.tween { transition: transform var(--anim, 260ms) ease-in-out, opacity var(--anim, 260ms) linear; }
+.piece.gone  { opacity: 0; }
+
+.state-line {
+  min-height: 18px;
+  margin: 8px 0 0;
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+}
+.state-line.over { color: var(--good); }
+.state-line.draw { color: var(--warn); }
+
+/* timeline + controls --------------------------------------------------- */
+.scrub {
+  display: block;
+  width: 100%;
+  margin: 8px 0 6px;
+  accent-color: var(--accent);
+}
+.controls {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.speed { justify-content: center; }
+.speed input { width: 160px; accent-color: var(--accent); }
+.speed output { color: var(--muted); font-size: 12px; min-width: 42px; text-align: right; font-variant-numeric: tabular-nums; }
+
+.input-row {
+  justify-content: center;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+.input-row .check { display: inline-flex; align-items: center; gap: 6px; color: var(--text); cursor: pointer; }
+.input-row input { accent-color: var(--hint); }
+.input-row button { font-size: 12px; padding: 4px 9px; }
+.input-hint { margin: 6px 0 0; text-align: center; font-size: 12px; color: var(--hint); min-height: 17px; }
+
+/* ---------------------------------------------------------------- side   */
+.commentary {
+  background: var(--bg-sunken);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: 4px;
+  padding: 10px;
+  min-height: 62px;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.commentary .muted, .muted { color: var(--muted); }
+.commentary p { margin: 0 0 6px; }
+.commentary p:last-child { margin-bottom: 0; }
+.commentary .who { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--accent); }
+.commentary .warn { color: var(--warn); }
+.commentary .info { color: var(--info); }
+.commentary .end  { color: var(--good); font-weight: 600; }
+
+.movelist {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  max-height: 46vh;
+  overflow-y: auto;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 12px;
+  border-radius: 3px;
+}
+.movelist li {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  padding: 4px 6px;
+  border-radius: 3px;
+  cursor: pointer;
+  border-left: 2px solid transparent;
+}
+.movelist li:hover { background: #232830; }
+.movelist li.active {
+  background: #2c2519;
+  border-left-color: var(--accent);
+}
+.movelist .no { color: var(--muted); min-width: 28px; text-align: right; flex: 0 0 auto; }
+.movelist .pc { width: 9px; height: 9px; border-radius: 50%; flex: 0 0 auto; }
+.movelist .pc.p1 { background: var(--p1); }
+.movelist .pc.p2 { background: var(--p2); }
+.movelist .pc.void { background: none; border: 1px dashed var(--muted); }
+.movelist .mv { flex: 1; overflow-wrap: anywhere; }
+.movelist .cm { color: var(--muted); font-style: italic; }
+.movelist .warn { color: var(--warn); }
+.movelist .info { color: var(--info); }
+.movelist .end  { color: var(--good); }
+.movelist:empty::after {
+  content: "No moves yet.";
+  display: block;
+  padding: 6px;
+  color: var(--muted);
+  font-family: inherit;
+}
+
+/* ---------------------------------------------------------------- misc   */
+.file-warning {
+  margin: 14px;
+  padding: 12px 14px;
+  border: 1px solid #6a5327;
+  background: #241d10;
+  border-radius: 6px;
+  font-size: 13px;
+}
+.file-warning pre {
+  margin: 8px 0 0;
+  padding: 8px;
+  background: #14100a;
+  border-radius: 4px;
+  overflow-x: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .piece.tween { transition: none; }
+}
